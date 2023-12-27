@@ -63,14 +63,19 @@ def get_formatter(plugin: Plugin):
     )
 
 
-def check_file_output(path: Path, force):
-    """Checks if file already exists and ask the user if it should
-    be overwritten if it does."""
+def check_file_output(path: Path, force: bool) -> FileOutput:
+    """
+    Checks if path already exists and asks the user if it should be overwritten if it does.
+    """
 
-    log.info(f"Writing output to\n{path.resolve()}")
+    # rewrap path and resolve using `os.path.realpath` instead of `path.resolve()`
+    # to avoid a pathlib issues on py39 and below
+    realpath = Path(os.path.realpath(path))
+
+    log.info(f"Writing output to\n{realpath}")
     log.debug("Checking file output")
 
-    if path.is_file() and not force:
+    if realpath.is_file() and not force:
         if sys.stdin.isatty():
             answer = console.ask(f"File {path} already exists! Overwrite it? [y/N] ")
             if not answer or answer.lower() != "y":
@@ -79,7 +84,7 @@ def check_file_output(path: Path, force):
             log.error(f"File {path} already exists, use --force to overwrite it.")
             sys.exit()
 
-    return FileOutput(path)
+    return FileOutput(filename=realpath)
 
 
 def create_output(formatter: Formatter) -> Union[FileOutput, PlayerOutput]:
@@ -675,7 +680,7 @@ def setup_config_args(parser, ignore_unknown=False):
     if streamlink and args.url:
         # Only load first available plugin config
         with suppress(NoPluginError):
-            pluginname, pluginclass, resolved_url = streamlink.resolve_url(args.url)
+            pluginname, _pluginclass, _resolved_url = streamlink.resolve_url(args.url)
             for config_file in CONFIG_FILES:  # pragma: no branch
                 config_file = config_file.with_name(f"{config_file.name}.{pluginname}")
                 if not config_file.is_file():
