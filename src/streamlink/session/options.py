@@ -300,7 +300,7 @@ class StreamlinkOptions(Options):
           - The maximum amount of time for waiting on a single CDP command response
         * - webbrowser-headless
           - ``bool``
-          - ``True``
+          - ``False``
           - Whether to launch the webbrowser in headless mode or not
     """
 
@@ -345,7 +345,7 @@ class StreamlinkOptions(Options):
             "webbrowser-cdp-host": None,
             "webbrowser-cdp-port": None,
             "webbrowser-cdp-timeout": 2.0,
-            "webbrowser-headless": True,
+            "webbrowser-headless": False,
         })
         self.session = session
 
